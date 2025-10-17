@@ -1,0 +1,38 @@
+﻿@model MenuItem
+@{
+    ViewData["Title"] = "AddAddNewMenuItem";
+}
+
+<h1>AddAddNewMenuItem</h1>
+
+<form asp-action="AddAddNewMenuItem" method="post" enctype="multipart/form-data">
+    <!-- Hidden Category Id -->
+    <input type="hidden" name="CategoryId" value="@Model.CategoryId" />
+
+    <div class="mb-3">
+        <label for="name" class="form-label">Dish Name</label>
+        <input type="text" class="form-control" name="Name" required>
+    </div>
+
+    <div class="mb-3">
+        <label for="description" class="form-label">Description</label>
+        <textarea class="form-control" name="Description" rows="3" placeholder="Enter dish details..."></textarea>
+    </div>
+
+    <div class="mb-3">
+        <label for="price" class="form-label">Price ($)</label>
+        <input type="number" step="0.01" min="0.01" class="form-control" name="Price" required>
+    </div>
+
+    <div class="mb-3">
+        <label for="prepTime" class="form-label">Preparation Time (minutes)</label>
+        <input type="number" class="form-control" name="PreparationTimeMinutes" min="0" max="60" placeholder="e.g., 15">
+    </div>
+
+    <div class="mb-3">
+        <label for="imagefile" class="form-label">Dish Image</label>
+        <input type="file" class="form-control" name="imagefile" accept="image/*">
+    </div>
+
+    <button type="submit" class="btn btn-primary">Add Dish</button>
+</form>

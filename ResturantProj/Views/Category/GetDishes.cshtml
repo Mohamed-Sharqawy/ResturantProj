@@ -1,0 +1,59 @@
+﻿@model Category
+@{
+    ViewData["Title"] = "GetDishes";
+}
+
+<h1>GetDishes</h1>
+
+<a asp-action="AddAddNewMenuItem" asp-route-categoryId="@Model.Id" class="btn btn-outline-primary"> Add New Dish </a>-
+<table class="table table-striped">
+    <thead>
+        <tr>
+            <th scope="col">Dish Name</th>
+            <th scope="col">Category</th>
+            <th scope="col">Daily Order Count</th>
+            <th scope="col">Dish Status</th>
+            <th scope="col">Price</th>
+            <th scope="col">Description</th>
+            <th scope="col">Actions</th>
+        </tr>
+    </thead>
+    <tbody>
+
+        @foreach (MenuItem menuItem in Model.MenuItems.Where(it => it.CategoryId == Model.Id))
+        {
+            <tr>
+                <td>
+                    @menuItem.Name
+                </td>
+                <td>
+                    @menuItem.Category.Name
+                </td>
+                <td>
+                    @menuItem.DailyOrderCount
+                </td>
+                <td>
+                    @menuItem.IsAvailable
+                </td>
+                <td>
+                    @menuItem.Price
+                </td>
+                <td>
+                    @menuItem.Description
+                </td>
+                <td>
+                    <a asp-action="MenuItemEdit" asp-route-id="@menuItem.Id" class="btn btn-outline-secondary"> Edit </a>
+                </td>
+                <td>
+                    <form asp-action="MenuItemDelete" method="post" asp-route-id="@menuItem.Id" style="display:inline;">
+                        <button type="submit" class="btn btn-outline-danger"
+                                onclick="return confirm('Are you sure you want to delete this dish?');">
+                            Delete
+                        </button>
+                    </form>
+
+                </td>
+            </tr>
+        }
+    </tbody>
+</table>

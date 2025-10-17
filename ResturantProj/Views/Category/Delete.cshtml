@@ -1,0 +1,33 @@
+﻿@model Category
+@{
+    ViewData["Title"] = "Delete";
+}
+
+<h1>Delete</h1>
+
+<h3>Are You sure You Want to Delete this Category??</h3>
+
+<p>@Model.Name</p>
+
+<table class="table table-striped">
+    <thead>
+        <tr>
+            <th scope="col">Category Name</th>
+            <th scope="col">Category Status</th>
+        </tr>
+    </thead>
+    <tbody>
+            <tr>
+                <td>
+                    @Model.Name
+                </td>
+                <td>
+                    @Model.IsActive
+                </td>
+            </tr>
+    </tbody>
+</table>
+<form asp-action="Delete" method="post">
+    <input type="hidden" asp-for="Id" />
+    <input type="submit" class="btn btn-danger" value="Delete" />
+</form>
