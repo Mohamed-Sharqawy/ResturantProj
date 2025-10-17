@@ -1,9 +1,9 @@
-<Project Sdk="Microsoft.NET.Sdk.Web">
+﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
     <TargetFramework>net9.0</TargetFramework>
-    <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
   </PropertyGroup>
 
   <ItemGroup>
@@ -12,17 +12,10 @@
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
-    <PackageReference Include="Microsoft.VisualStudio.Web.CodeGeneration.Design" Version="9.0.0" />
   </ItemGroup>
 
   <ItemGroup>
-    <Folder Include="Views\MenuItem\" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <ProjectReference Include="..\ResturantProj.Application\ResturantProj.Application.csproj" />
     <ProjectReference Include="..\ResturantProj.Domain\ResturantProj.Domain.csproj" />
-    <ProjectReference Include="..\ResturantProj.Infrastructure\ResturantProj.Infrastructure.csproj" />
   </ItemGroup>
 
 </Project>
