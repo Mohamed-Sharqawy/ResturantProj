@@ -1,59 +1,128 @@
 ﻿@model Category
+
 @{
-    ViewData["Title"] = "GetDishes";
+    ViewData["Title"] = "Dishes";
 }
 
-<h1>GetDishes</h1>
+<style>
+    :root {
+        --cozy-red: #a4161a;
+        --dark-red: #6a040f;
+        --light-bg: #f8f5f2;
+        --dark-text: #333333;
+    }
 
-<a asp-action="AddAddNewMenuItem" asp-route-categoryId="@Model.Id" class="btn btn-outline-primary"> Add New Dish </a>-
-<table class="table table-striped">
-    <thead>
-        <tr>
-            <th scope="col">Dish Name</th>
-            <th scope="col">Category</th>
-            <th scope="col">Daily Order Count</th>
-            <th scope="col">Dish Status</th>
-            <th scope="col">Price</th>
-            <th scope="col">Description</th>
-            <th scope="col">Actions</th>
-        </tr>
-    </thead>
-    <tbody>
+    body {
+        background-color: var(--light-bg);
+        color: var(--dark-text);
+        font-family: 'Segoe UI', sans-serif;
+    }
 
-        @foreach (MenuItem menuItem in Model.MenuItems.Where(it => it.CategoryId == Model.Id))
-        {
-            <tr>
-                <td>
-                    @menuItem.Name
-                </td>
-                <td>
-                    @menuItem.Category.Name
-                </td>
-                <td>
-                    @menuItem.DailyOrderCount
-                </td>
-                <td>
-                    @menuItem.IsAvailable
-                </td>
-                <td>
-                    @menuItem.Price
-                </td>
-                <td>
-                    @menuItem.Description
-                </td>
-                <td>
-                    <a asp-action="MenuItemEdit" asp-route-id="@menuItem.Id" class="btn btn-outline-secondary"> Edit </a>
-                </td>
-                <td>
-                    <form asp-action="MenuItemDelete" method="post" asp-route-id="@menuItem.Id" style="display:inline;">
-                        <button type="submit" class="btn btn-outline-danger"
-                                onclick="return confirm('Are you sure you want to delete this dish?');">
-                            Delete
-                        </button>
-                    </form>
+    h1 {
+        color: var(--dark-red);
+        text-align: center;
+        margin-bottom: 2rem;
+    }
 
-                </td>
-            </tr>
+    .add-btn {
+        display: flex;
+        justify-content: center;
+        margin-bottom: 2rem;
+    }
+
+    .card-container {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+        gap: 2rem;
+        justify-items: center;
+        padding: 0 1rem 4rem 1rem;
+        min-height: calc(100vh - 200px);
+    }
+
+    .dish-card {
+        background-color: white;
+        border-radius: 16px;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+        overflow: hidden;
+        text-align: center;
+        transition: transform 0.2s ease, box-shadow 0.2s ease;
+        width: 100%;
+        max-width: 350px;
+    }
+
+        .dish-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 6px 16px rgba(0, 0, 0, 0.15);
         }
-    </tbody>
-</table>
+
+        .dish-card img {
+            width: 100%;
+            height: 200px;
+            object-fit: cover;
+        }
+
+    .dish-info {
+        padding: 1rem;
+        text-align: left;
+    }
+
+        .dish-info h5 {
+            color: var(--dark-red);
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+        }
+
+        .dish-info p {
+            font-size: 0.9rem;
+            margin: 0.25rem 0;
+        }
+
+        .dish-info .price {
+            color: var(--cozy-red);
+            font-weight: 600;
+        }
+
+    .card-buttons {
+        display: flex;
+        justify-content: center;
+        gap: 0.5rem;
+        flex-wrap: wrap;
+        padding: 0 0 1rem 0;
+    }
+
+        .card-buttons form {
+            display: inline;
+        }
+</style>
+
+<h1>@Model.Name Dishes</h1>
+
+<div class="add-btn">
+    <a asp-action="AddAddNewMenuItem" asp-route-categoryId="@Model.Id" class="btn btn-outline-primary">Add New Dish</a>
+</div>
+
+<div class="card-container">
+    @foreach (var menuItem in Model.MenuItems.Where(it => it.CategoryId == Model.Id))
+    {
+        <div class="dish-card">
+            <img src="@menuItem.ImgUrl" alt="@menuItem.Name" class="img-thumbnail" />
+
+            <div class="dish-info">
+                <h5>@menuItem.Name</h5>
+                <p><strong>Category:</strong> @menuItem.Category.Name</p>
+                <p><strong>Daily Orders:</strong> @menuItem.DailyOrderCount</p>
+                <p class="price">Price: @menuItem.Price.ToString("C")</p>
+                <p><strong>Description:</strong> @menuItem.Description</p>
+            </div>
+
+            <div class="card-buttons">
+                <a asp-action="MenuItemEdit" asp-route-id="@menuItem.Id" class="btn btn-outline-secondary">Edit</a>
+
+                <form asp-action="MenuItemDelete" method="post" asp-route-id="@menuItem.Id"
+                      onsubmit="return confirm('Are you sure you want to delete this dish?');">
+                    <button type="submit" class="btn btn-outline-danger">Delete</button>
+                </form>
+            </div>
+        </div>
+    }
+</div>

@@ -1,0 +1,125 @@
+﻿@model List<MenuItem>
+@{
+    ViewData["Title"] = "Menu Items";
+}
+
+<style>
+    /* Custom CSS to enhance the menu cards */
+    .menu-card {
+        border: none;
+        border-radius: 10px;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+        transition: transform 0.3s ease-in-out;
+    }
+
+        .menu-card:hover {
+            transform: translateY(-5px); /* Lift card on hover for a subtle effect */
+            box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2);
+        }
+
+    .card-img-top {
+        height: 200px; /* Uniform height for all images */
+        object-fit: cover; /* Ensures images fill the space without distortion */
+        border-top-left-radius: 10px;
+        border-top-right-radius: 10px;
+    }
+
+    .category-tag {
+        font-size: 0.8rem;
+        font-weight: 500;
+        background-color: #f8f5f2; /* Light background for the tag */
+        color: #6a040f; /* Cozy color for text */
+        padding: 4px 8px;
+        border-radius: 5px;
+        display: inline-block;
+        margin-bottom: 0.5rem;
+    }
+
+    .price-text {
+        font-size: 1.5rem;
+        font-weight: bold;
+        color: #a4161a; /* Rustic red for price */
+    }
+
+    .availability-status {
+        font-size: 0.9rem;
+        font-weight: 600;
+        border-radius: 5px;
+        padding: 5px 10px;
+        display: inline-block;
+    }
+
+        .availability-status.available {
+            background-color: #d4edda;
+            color: #155724;
+        }
+
+        .availability-status.unavailable {
+            background-color: #f8d7da;
+            color: #721c24;
+        }
+
+    .admin-btn {
+        font-size: 0.85rem;
+        padding: 6px 10px;
+    }
+</style>
+
+<div class="container py-4">
+    <h1 class="text-center mb-4" style="color: #6a040f;">Our Cozy Menu</h1>
+
+    <div class="text-center mb-5">
+        <a asp-action="Create" asp-controller="Order" class="btn btn-lg btn-outline-primary">
+            🍽️ Ready To Order
+        </a>
+    </div>
+
+    <div class="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-4">
+        @foreach (MenuItem menuItem in Model)
+        {
+            <div class="col">
+                <div class="card menu-card h-100">
+                    <img src="@menuItem.ImgUrl" class="card-img-top" alt="Image of @menuItem.Name" />
+
+                    <div class="card-body d-flex flex-column">
+                        <span class="category-tag">@menuItem.Category.Name</span>
+
+                        <h5 class="card-title">@menuItem.Name</h5>
+
+                        <p class="card-text text-muted flex-grow-1">
+                            @menuItem.Description
+                        </p>
+
+                        <div class="d-flex justify-content-between align-items-center pt-2 mt-auto border-top">
+                            <span class="price-text">
+                                $@menuItem.Price
+                            </span>
+
+                            <span class="availability-status @(menuItem.IsAvailable ? "available" : "unavailable")">
+                                @(menuItem.IsAvailable ? "Available" : "Unavailable")
+                            </span>
+                        </div>
+
+                        @if (User.IsInRole("Admin"))
+                        {
+                            <form asp-action="ToggleAvailability" asp-controller="MenuItem" method="post" class="mt-3">
+                                <input type="hidden" name="id" value="@menuItem.Id" />
+                                <button type="submit"
+                                        class="btn @(menuItem.IsAvailable ? "btn-danger" : "btn-success") admin-btn w-100">
+                                    @(menuItem.IsAvailable ? "Set Unavailable" : "Set Available")
+                                </button>
+                            </form>
+                        }
+                    </div>
+                </div>
+            </div>
+        }
+    </div>
+
+    @if (!Model.Any())
+    {
+        <div class="alert alert-info text-center mt-5" role="alert">
+            We're preparing the kitchen! Menu items will be available soon.
+        </div>
+    }
+</div>

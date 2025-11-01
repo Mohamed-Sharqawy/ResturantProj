@@ -1,8 +1,187 @@
 ﻿@{
-    ViewData["Title"] = "Home Page";
+    ViewData["Title"] = "The Cozy Corner - Home";
 }
 
-<div class="text-center">
-    <h1 class="display-4">Welcome</h1>
-    <p>Learn about <a href="https://learn.microsoft.com/aspnet/core">building Web apps with ASP.NET Core</a>.</p>
+<style>
+    /* Custom CSS for a cozy feel */
+    :root {
+        --cozy-red: #a4161a;
+        --dark-red: #6a040f;
+        --light-bg: #f8f5f2; /* Off-white, warm background */
+    }
+
+    body {
+        background-color: #ffffff; /* Explicitly set to White */
+    }
+
+    /* --- HERO/SLIDER CONTAINER --- */
+    .slider-wrapper {
+        position: relative; /* Crucial for positioning the absolute header */
+        width: 100%;
+        max-height: 80vh; /* Increase height to give the header room */
+        overflow: hidden;
+        margin-bottom: 3rem;
+    }
+
+    /* OVERLAY HEADER */
+    .hero-header-overlay {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        /* CHANGE: Fully transparent background. Removed the red background-color. */
+        background-color: transparent;
+        color: #ffffff; /* White text for contrast against the images */
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center; /* Center vertically */
+        z-index: 10; /* Ensure text is above the slider images */
+        text-shadow: 2px 2px 6px rgba(0, 0, 0, 0.9); /* Stronger shadow for readability */
+        padding: 0 15px;
+    }
+
+        .hero-header-overlay h1 {
+            font-family: 'Georgia', serif;
+            font-size: 5rem; /* Slightly larger title */
+            font-weight: bold;
+        }
+
+        .hero-header-overlay p {
+            font-size: 1.75rem;
+        }
+
+    /* SLIDER IMAGES */
+    .slider-container .carousel-item img {
+        height: 80vh; /* Match wrapper height */
+        object-fit: cover;
+    }
+
+    /* CHANGE: This is the main text on the white background. */
+    .container {
+        color: #333333; /* Dark gray for main text readability */
+    }
+
+    .section-title {
+        color: var(--dark-red);
+        font-family: 'Georgia', serif;
+        margin-bottom: 1.5rem;
+    }
+
+    .card {
+        border: none;
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    }
+
+    .btn-custom {
+        background-color: var(--cozy-red);
+        border-color: var(--cozy-red);
+        color: white;
+        transition: background-color 0.3s ease;
+    }
+
+        .btn-custom:hover {
+            background-color: var(--dark-red);
+            border-color: var(--dark-red);
+            color: white;
+        }
+</style>
+
+<div class="slider-wrapper">
+
+    <div class="hero-header-overlay text-center">
+        <h1 class="animate__animated animate__fadeInDown">The Cozy Corner</h1>
+        <p class="animate__animated animate__fadeInUp mt-3">Where every meal feels like coming home.</p>
+        <a asp-action="Create" asp-controller="Order" class="btn btn-lg btn-light mt-4 animate__animated animate__zoomIn" style="color: var(--dark-red); font-weight: bold;">Ready to Order?</a>
+    </div>
+
+    <div id="carouselExampleSlidesOnly" class="carousel slide" data-bs-ride="carousel">
+        <div class="carousel-inner">
+            <div class="carousel-item active">
+                <img src="~/Imgs/Slider1.jpg" class="d-block w-100" alt="Delicious dish 1">
+            </div>
+            <div class="carousel-item">
+                <img src="~/Imgs/Slider2.jpg" class="d-block w-100" alt="Restaurant interior">
+            </div>
+            <div class="carousel-item">
+                <img src="~/Imgs/Slider3.jpg" class="d-block w-100" alt="Appetizer close-up">
+            </div>
+        </div>
+    </div>
+</div>
+
+<hr class="my-5">
+
+<div class="container py-5">
+    <div class="row">
+        <div class="col-lg-6 mb-4">
+            <h2 class="section-title">Our Story</h2>
+            <p class="lead">
+                Nestled in the heart of the city, **The Cozy Corner** was founded on the simple belief that great food and good company are the keys to a happy life. We use only the freshest, locally sourced ingredients to craft classic comfort dishes with a modern, flavorful twist.
+            </p>
+            <p>
+                From our crackling fireplace to our hand-picked wine list, every detail is designed to make you feel relaxed, cherished, and entirely at home. Join us for dinner, and leave as part of the family.
+            </p>
+        </div>
+        <div class="col-lg-6">
+            <img src="~/Imgs/pexels-suzukii-xingfu-67659-698308.jpg" class="img-fluid rounded shadow-lg" alt="Chef preparing a meal">
+        </div>
+    </div>
+</div>
+
+<hr class="my-5">
+
+<div class="container py-5">
+    <h2 class="text-center section-title">Signature Comfort</h2>
+    <div class="row mt-4">
+
+        <div class="col-md-4 mb-4">
+            <div class="card h-100">
+                <div class="card-body text-center">
+                    <i class="bi bi-star-fill text-warning fs-3"></i>
+                    <h5 class="card-title mt-2">Baked Brie with Honey</h5>
+                    <p class="card-text text-muted">A warm, melting wheel of brie topped with pecans and local honey. Served with toasted baguette slices.</p>
+                    <p class="fw-bold text-success">$14</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-4 mb-4">
+            <div class="card h-100">
+                <div class="card-body text-center">
+                    <i class="bi bi-heart-fill text-danger fs-3"></i>
+                    <h5 class="card-title mt-2">Mom's Meatloaf</h5>
+                    <p class="card-text text-muted">Our famous house-made meatloaf, slow-cooked and served with garlic mashed potatoes and gravy.</p>
+                    <p class="fw-bold text-success">$24</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-4 mb-4">
+            <div class="card h-100">
+                <div class="card-body text-center">
+                    <i class="bi bi-cup-hot-fill text-info fs-3"></i>
+                    <h5 class="card-title mt-2">Apple Crumble a la Mode</h5>
+                    <p class="card-text text-muted">Warm, spiced apple filling with a buttery oat crumble, served with vanilla bean ice cream.</p>
+                    <p class="fw-bold text-success">$10</p>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="text-center mt-4">
+        <a asp-action="Index" asp-controller="MenuItem" class="btn btn-lg btn-outline-secondary">View Full Menu</a>
+    </div>
+</div>
+
+<hr class="my-5">
+
+<div id="ordering" class="bg-light py-5">
+    <div class="container text-center">
+        <h2 class="section-title">Hungry Now?</h2>
+        <p class="lead mb-4">
+            View our full menu and place an order for takeout or delivery.
+        </p>
+        <a asp-action="Create" asp-controller="Order" class="btn btn-lg btn-custom shadow-sm">Start Your Order</a>
+    </div>
 </div>

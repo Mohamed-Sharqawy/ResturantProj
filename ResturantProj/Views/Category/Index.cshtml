@@ -1,44 +1,119 @@
 ﻿@model List<Category>
+
 @{
-    ViewData["Title"] = "Index";
+    ViewData["Title"] = "Categories";
 }
 
-<h1>Index</h1>
-<a asp-action="AddCat" class="btn btn-outline-primary"> Add New Category</a>
-<table class="table table-striped">
-    <thead>
-        <tr>
-            <th scope="col">Category Name</th>
-            <th scope="col">Category Status</th>
-            <th scope="col">Image</th>
-        </tr>
-    </thead>
-    <tbody>
+<style>
+    :root {
+        --cozy-red: #a4161a;
+        --dark-red: #6a040f;
+        --light-bg: #f8f5f2;
+        --dark-text: #333333;
+    }
 
-        @foreach (Category category in Model)
-        {
-            <tr>
-                <td>
-                    @category.Name
-                </td>
-                <td>
-                    @category.IsActive
-                </td>
-                <td>
-                    <img src="@category.ImgUrl" width="80px" height="80px" class="img-thumbnail"/>
-                </td>
-                <td>
-                    <a asp-action="GetDishes" asp-route-id="@category.Id" class="btn btn-outline-primary"> Dishes </a>
-                </td>
-                <td>
-                    <a asp-action="Edit" asp-route-id="@category.Id" class="btn btn-outline-secondary"> Edit </a>
-                </td>
-                <td>
-                    <a asp-action="Delete" asp-route-id="@category.Id" class="btn btn-outline-danger"> Delete </a>
-                </td>
-            </tr>
+    body {
+        background-color: var(--light-bg);
+        color: var(--dark-text);
+        font-family: 'Segoe UI', sans-serif;
+    }
+
+    h1 {
+        color: var(--dark-red);
+        text-align: center;
+        margin-bottom: 2rem;
+    }
+
+    .add-btn {
+        display: flex;
+        justify-content: center;
+        margin-bottom: 2rem;
+    }
+
+    .card-container {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+        gap: 2rem;
+        justify-items: center;
+        padding: 0 1rem 4rem 1rem;
+        min-height: calc(100vh - 200px);
+    }
+
+    .category-card {
+        background-color: white;
+        border-radius: 16px;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+        overflow: hidden;
+        text-align: center;
+        transition: transform 0.2s ease, box-shadow 0.2s ease;
+        width: 100%;
+        max-width: 320px;
+    }
+
+        .category-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 6px 16px rgba(0, 0, 0, 0.15);
         }
-    </tbody>
-</table>
 
+        .category-card img {
+            width: 100%;
+            height: 180px;
+            object-fit: cover;
+        }
 
+    .category-info {
+        padding: 1rem;
+    }
+
+        .category-info h5 {
+            margin-bottom: 0.5rem;
+            color: var(--dark-red);
+            font-weight: 600;
+        }
+
+    .category-status {
+        color: var(--cozy-red);
+        font-size: 0.9rem;
+        margin-bottom: 1rem;
+    }
+
+    .card-buttons {
+        display: flex;
+        justify-content: center;
+        flex-wrap: wrap;
+        gap: 0.5rem;
+        padding: 0 0 1rem 0;
+    }
+
+        .card-buttons .btn {
+            min-width: 90px;
+        }
+</style>
+
+<h1>Categories</h1>
+
+<div class="add-btn">
+    <a asp-action="AddCat" class="btn btn-outline-primary">Add New Category</a>
+</div>
+
+<div class="card-container">
+    @foreach (var category in Model)
+    {
+        <div class="category-card">
+            <img src="@category.ImgUrl" alt="@category.Name" class="img-thumbnail" />
+
+            <div class="category-info">
+                <h5>@category.Name</h5>
+                <div class="category-status">
+                    Status: @(category.IsActive ? "Active" : "Inactive")
+                </div>
+            </div>
+
+            <div class="card-buttons">
+                <a asp-action="GetDishes" asp-route-id="@category.Id" class="btn btn-outline-primary">Dishes</a>
+                <a asp-action="Edit" asp-route-id="@category.Id" class="btn btn-outline-secondary">Edit</a>
+                <a asp-action="Delete" asp-route-id="@category.Id" class="btn btn-outline-danger">Delete</a>
+            </div>
+        </div>
+    }
+</div>

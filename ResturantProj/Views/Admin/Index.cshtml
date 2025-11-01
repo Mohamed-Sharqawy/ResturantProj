@@ -1,0 +1,116 @@
+﻿@{
+    ViewData["Title"] = "Management Dashboard";
+}
+
+<style>
+    :root {
+        --cozy-red: #a4161a;
+        --dark-red: #6a040f;
+        --light-bg: #f8f5f2;
+        --dark-text: #333333;
+    }
+
+    html, body {
+        height: 100%;
+        margin: 0;
+        background-color: var(--light-bg);
+        color: var(--dark-text);
+    }
+
+    body {
+        display: flex;
+        flex-direction: column;
+        min-height: 100vh;
+    }
+
+    main {
+        flex: 1;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 2rem 1rem;
+    }
+
+    .dashboard-container {
+        width: 100%;
+        max-width: 900px;
+    }
+
+    .dashboard-title {
+        color: var(--dark-red);
+        text-align: center;
+        margin-bottom: 2rem;
+        font-weight: 700;
+    }
+
+    .card-link {
+        text-decoration: none;
+        color: inherit;
+    }
+
+    .management-card {
+        border: none;
+        border-radius: 12px;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+        transition: all 0.3s ease-in-out;
+        background-color: #fff;
+        text-align: center;
+        padding: 2.5rem 1rem;
+        height: 100%;
+    }
+
+        .management-card:hover {
+            transform: translateY(-6px);
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.15);
+        }
+
+    .management-icon {
+        font-size: 3rem;
+        color: var(--cozy-red);
+        margin-bottom: 1rem;
+    }
+
+    .management-title {
+        font-size: 1.3rem;
+        font-weight: 600;
+        color: var(--dark-red);
+        margin-bottom: 0.5rem;
+    }
+
+    .management-desc {
+        font-size: 0.95rem;
+        color: #555;
+    }
+</style>
+
+<main>
+    <div class="dashboard-container">
+        <h1 class="dashboard-title">🍷 Management Dashboard</h1>
+
+        <div class="row row-cols-1 row-cols-md-2 g-4">
+            <div class="col">
+                <a asp-controller="Category" asp-action="Index" class="card-link">
+                    <div class="management-card">
+                        <div class="management-icon">📂</div>
+                        <div class="management-title">Category Management</div>
+                        <div class="management-desc">
+                            Manage all your menu categories, update names, and keep your menu organized.
+                        </div>
+                    </div>
+                </a>
+            </div>
+
+            <div class="col">
+                <a asp-controller="Order" asp-action="Index" class="card-link">
+                    <div class="management-card">
+                        <div class="management-icon">🧾</div>
+                        <div class="management-title">Order Management</div>
+                        <div class="management-desc">
+                            View and manage customer orders efficiently with a single click.
+                        </div>
+                    </div>
+                </a>
+            </div>
+        </div>
+    </div>
+</main>

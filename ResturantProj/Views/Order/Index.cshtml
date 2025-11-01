@@ -1,0 +1,34 @@
+﻿@model List<ResturantProj.Models.Order>
+@{
+    ViewData["Title"] = "Index";
+}
+<meta http-equiv="refresh" content="30">
+
+<h1>Index</h1>
+
+<table class="table table-striped">
+    <thead>
+        <tr>
+            <th scope="col">Order Date</th>
+            <th scope="col">Order Status</th>
+            <th scope="col">Amount</th>
+        </tr>
+    </thead>
+    <tbody>
+
+        @foreach (Order order in Model)
+        {
+            <tr>
+                <td>
+                    @order.CreatedAt
+                </td>
+                <td>
+                    @order.Status
+                </td>
+                <td>
+                    @order.SubTotal
+                </td>
+            </tr>
+        }
+    </tbody>
+</table>

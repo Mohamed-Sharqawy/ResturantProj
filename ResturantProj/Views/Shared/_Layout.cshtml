@@ -3,17 +3,67 @@
 <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>@ViewData["Title"] - ResturantProj</title>
-    <script type="importmap"></script>
+    <title>@ViewData["Title"] - The Cozy Corner</title>
+
     <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
     <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
     <link rel="stylesheet" href="~/ResturantProj.styles.css" asp-append-version="true" />
+
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css">
+
+    <style>
+        /* --- Layout Theme Styles --- */
+        :root {
+            --cozy-red: #a4161a;
+            --dark-red: #6a040f;
+            --light-bg: #f8f5f2; /* Off-white, warm background */
+        }
+
+        /* Navbar Styling */
+        .navbar-custom {
+            background-color: var(--cozy-red) !important; /* Rustic red background */
+            border-bottom: 1px solid var(--dark-red) !important;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+        }
+
+            .navbar-custom .navbar-brand,
+            .navbar-custom .nav-link {
+                color: white !important; /* White text for contrast */
+                font-weight: 500;
+                transition: color 0.3s ease;
+            }
+
+                .navbar-custom .navbar-brand:hover,
+                .navbar-custom .nav-link:hover {
+                    color: var(--light-bg) !important; /* Lighter color on hover */
+                }
+
+            .navbar-custom .navbar-toggler {
+                border-color: rgba(255, 255, 255, 0.5); /* Lighter border for toggler */
+            }
+
+            .navbar-custom .navbar-toggler-icon {
+                filter: brightness(0) invert(1); /* Makes the toggler icon white */
+            }
+
+        /* Footer Styling */
+        .footer-custom {
+            background-color: var(--dark-red); /* Darker red/brown for the footer */
+            color: white !important;
+            padding: 1rem 0;
+            margin-top: 30px;
+        }
+
+            .footer-custom a {
+                color: var(--light-bg) !important;
+            }
+    </style>
 </head>
 <body>
     <header>
-        <nav class="navbar navbar-expand-sm navbar-toggleable-sm navbar-light bg-white border-bottom box-shadow mb-3">
+        <nav class="navbar navbar-expand-sm navbar-toggleable-sm navbar-custom box-shadow mb-3">
             <div class="container-fluid">
-                <a class="navbar-brand" asp-area="" asp-controller="Home" asp-action="Index">ResturantProj</a>
+                <a class="navbar-brand" asp-area="" asp-controller="Home" asp-action="Index">🍽️ The Cozy Corner</a>
                 <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target=".navbar-collapse" aria-controls="navbarSupportedContent"
                         aria-expanded="false" aria-label="Toggle navigation">
                     <span class="navbar-toggler-icon"></span>
@@ -21,10 +71,18 @@
                 <div class="navbar-collapse collapse d-sm-inline-flex justify-content-between">
                     <ul class="navbar-nav flex-grow-1">
                         <li class="nav-item">
-                            <a class="nav-link text-dark" asp-area="" asp-controller="Home" asp-action="Index">Home</a>
+                            <a class="nav-link" asp-area="" asp-controller="Home" asp-action="Index">Home</a>
                         </li>
                         <li class="nav-item">
-                            <a class="nav-link text-dark" asp-area="" asp-controller="Home" asp-action="Privacy">Privacy</a>
+                            <a class="nav-link" asp-area="" asp-controller="MenuItem" asp-action="Index">Meals</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" asp-area="" asp-controller="Order" asp-action="Create"> Order Now </a>
+                        </li>
+                    </ul>
+                    <ul class="navbar-nav">
+                        <li class="nav-item">
+                            <a class="nav-link" asp-area="" asp-controller="Account" asp-action="Login"> Admin Dashboard </a>
                         </li>
                     </ul>
                 </div>
@@ -37,9 +95,9 @@
         </main>
     </div>
 
-    <footer class="border-top footer text-muted">
+    <footer class="footer-custom border-top text-muted">
         <div class="container">
-            &copy; 2025 - ResturantProj - <a asp-area="" asp-controller="Home" asp-action="Privacy">Privacy</a>
+            &copy; 2025 - The Cozy Corner - <a asp-area="" asp-controller="Home" asp-action="Privacy">Privacy</a>
         </div>
     </footer>
     <script src="~/lib/jquery/dist/jquery.min.js"></script>

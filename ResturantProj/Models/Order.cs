@@ -8,7 +8,7 @@ namespace ResturantProj.Models
     {
         [Required]
         [StringLength(50)]
-        public string OrderNumber { get; set; }
+        public string OrderNumber { get; set; } = $"ORD-{DateTime.Now:yyyyMMddHHmmss}";
 
         [Required]
         public OrderStatus Status { get; set; } = OrderStatus.Pending;
@@ -28,17 +28,19 @@ namespace ResturantProj.Models
         [Column(TypeName = "decimal(18,2)")]
         public decimal Total { get; set; }
 
-        public PaymentMethod PaymentMethod { get; set; } = PaymentMethod.NotSelected;
+        //public decimal DeliveryCharge { get; set; } = 12;
+
+        public PaymentMethod PaymentMethod { get; set; } = PaymentMethod.Cash;
 
         public PaymentStatus PaymentStatus { get; set; } = PaymentStatus.Pending;
 
-        public DateTime? PaidAt { get; set; }
+        public DateTime? PaidAt { get; set; } = DateTime.UtcNow;
 
-        public DateTime StatusChangedAt { get; set; }
+        public DateTime? StatusChangedAt { get; set; } = DateTime.UtcNow;
 
         // Navigation Properties
-        public virtual ICollection<OrderItem> OrderItems { get; set; }
-        public virtual DeliveryAddress DeliveryAddress { get; set; }
-        public virtual ICollection<OrderStatusHistory> OrderStatusHistories { get; set; }
+        public virtual ICollection<OrderItem> OrderItems { get; set; } = new List<OrderItem>();
+        public virtual DeliveryAddress? DeliveryAddress { get; set; }
+        public virtual ICollection<OrderStatusHistory>? OrderStatusHistories { get; set; }
     }
 }

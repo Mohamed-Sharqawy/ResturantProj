@@ -1,9 +1,10 @@
-﻿using Microsoft.EntityFrameworkCore;
+﻿using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore;
 using ResturantProj.Models;
 
 namespace ResturantProj.ResContext
 {
-    public class MyResContext : DbContext
+    public class MyResContext : IdentityDbContext<CustomUser>
     {
         public MyResContext(DbContextOptions<MyResContext> options) : base(options) { }
 
@@ -21,6 +22,8 @@ namespace ResturantProj.ResContext
             base.OnModelCreating(modelBuilder);
 
             modelBuilder.ApplyConfigurationsFromAssembly(typeof(MyResContext).Assembly);
+
+            
 
             //SeedData(modelBuilder);
         }
