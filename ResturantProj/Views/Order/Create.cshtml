@@ -177,7 +177,6 @@
                     <div class="form-group mb-3">
                         <label asp-for="OrderType" class="form-label fw-bold"></label>
                         <select asp-for="OrderType" class="form-control" id="OrderType">
-                            <option disabled selected value="">-- Select Order Type --</option>
                             <option value="0">Dine In</option>
                             <option value="1">Takeout</option>
                             <option value="2">Delivery</option>
@@ -186,9 +185,17 @@
                     </div>
 
                     <div class="form-group mb-3" id="addressField" style="display:none;">
-                        <label for="DeliveryAddress" class="form-label fw-bold">Delivery Address</label>
-                        <input type="text" class="form-control" name="DeliveryAddress" id="DeliveryAddress" />
-                        <span asp-validation-for="DeliveryAddress" class="text-danger"></span>
+                        <label asp-for="DeliveryAddress.FullAddress" class="form-label fw-bold"></label>
+                        <input asp-for="DeliveryAddress.FullAddress" class="form-control" placeholder="123 Main St, Apt 4B..." />
+                        <span asp-validation-for="DeliveryAddress.FullAddress" class="text-danger"></span>
+
+                        <label asp-for="DeliveryAddress.CustomerName" class="form-label fw-bold mt-2">Name</label>
+                        <input asp-for="DeliveryAddress.CustomerName" class="form-control" placeholder="Full name" />
+                        <span asp-validation-for="DeliveryAddress.CustomerName" class="text-danger"></span>
+
+                        <label asp-for="DeliveryAddress.Phone" class="form-label fw-bold mt-2">Phone</label>
+                        <input asp-for="DeliveryAddress.Phone" class="form-control" placeholder="+20 1x xxx xxxx" />
+                        <span asp-validation-for="DeliveryAddress.Phone" class="text-danger"></span>
                     </div>
 
                     <hr />
@@ -289,9 +296,14 @@
     <partial name="_ValidationScriptsPartial" />
 
     <script>
-        document.getElementById("OrderType").addEventListener("change", function () {
-            document.getElementById("addressField").style.display = (this.value === "2") ? "block" : "none";
-        });
+        // ensure address visibility reflects current select value on load and on change
+        const orderTypeEl = document.getElementById("OrderType");
+        function updateAddressVisibility() {
+            document.getElementById("addressField").style.display = (orderTypeEl.value === "2") ? "block" : "none";
+        }
+        orderTypeEl.addEventListener("change", updateAddressVisibility);
+        // initial
+        updateAddressVisibility();
 
         const checkboxes = document.querySelectorAll(".menu-item-checkbox");
         const qtyInputs = document.querySelectorAll(".qty-input");

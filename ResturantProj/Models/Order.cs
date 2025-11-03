@@ -40,7 +40,7 @@ namespace ResturantProj.Models
 
         // Navigation Properties
         public virtual ICollection<OrderItem> OrderItems { get; set; } = new List<OrderItem>();
-        public virtual DeliveryAddress? DeliveryAddress { get; set; }
+        public virtual DeliveryAddress? DeliveryAddress { get; set; } = new DeliveryAddress();
         public virtual ICollection<OrderStatusHistory>? OrderStatusHistories { get; set; }
     }
 }

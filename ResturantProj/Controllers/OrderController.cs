@@ -8,6 +8,7 @@ using ResturantProj.Models.Enums;
 using ResturantProj.ResContext;
 using ResturantProj.VMs;
 using System;
+using System.Text.RegularExpressions;
 
 namespace ResturantProj.Controllers
 {
@@ -404,39 +405,37 @@ namespace ResturantProj.Controllers
         //    TempData["SuccessMessage"] = "Order placed successfully!";
         //    return RedirectToAction("Index", "MenuItem");
         //}
-
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Create(Order order, int[] SelectedMenuItemIds, int[] Quantities)
         {
-            // Load menu items for view & processing
+            order.DeliveryAddress ??= new DeliveryAddress();
+
             var menuItems = await db.MenuItems
                 .Include(m => m.Category)
                 .OrderBy(m => m.Id)
                 .ToListAsync();
+
             ViewBag.MenuItems = menuItems;
-            const int DailyLimit = 50;
-            ViewBag.DailyLimit = DailyLimit;
+            ViewBag.DailyLimit = 50;
 
-            // --- Basic delivery validation ---
+            ModelState.Remove($"{nameof(order.DeliveryAddress)}.{nameof(order.DeliveryAddress.FullAddress)}");
+            ModelState.Remove(nameof(order.DeliveryAddress));
+
             if (order.OrderType != OrderType.Delivery)
-            {
-                ModelState.Remove(nameof(order.DeliveryAddress));
-            }
-            else if (string.IsNullOrWhiteSpace(order.DeliveryAddress?.FullAddress))
-            {
-                ModelState.AddModelError(nameof(order.DeliveryAddress), "Address is required for delivery.");
-                order.SubTotal += 12;
-            }
+                order.DeliveryAddress = null;
+            else if (string.IsNullOrWhiteSpace(order.DeliveryAddress.FullAddress))
+                ModelState.AddModelError(
+                    $"{nameof(order.DeliveryAddress)}.{nameof(order.DeliveryAddress.FullAddress)}",
+                    "Address is required for delivery.");
 
-            // --- Read selected ids & quantities ---
+            // --- Read selected ids & quantities (robust mapping) ---
             var selectedIds = SelectedMenuItemIds ?? Array.Empty<int>();
-
-            // Build a mapping SelectedMenuItemId -> Quantity (robust)
             var qtyMap = new Dictionary<int, int>();
+
             if (selectedIds.Length > 0 && Quantities != null && Quantities.Length > 0)
             {
-                // case A: quantities posted aligned with selectedIds (common)
+                // Case A: Quantities align with SelectedMenuItemIds
                 if (Quantities.Length == selectedIds.Length)
                 {
                     for (int i = 0; i < selectedIds.Length; i++)
@@ -444,20 +443,23 @@ namespace ResturantProj.Controllers
                         qtyMap[selectedIds[i]] = Math.Max(1, Quantities[i]);
                     }
                 }
-                // case B: quantities posted for full menu (by menuItems index)
+                // Case B: Quantities posted for full menu (by index)
                 else if (Quantities.Length == menuItems.Count)
                 {
                     for (int i = 0; i < menuItems.Count; i++)
                     {
                         var id = menuItems[i].Id;
-                        qtyMap[id] = Math.Max(1, Quantities[i]);
+                        if (selectedIds.Contains(id))
+                            qtyMap[id] = Math.Max(1, Quantities[i]);
                     }
                 }
-                // fallback: attempt to map by index of id in selectedIds to quantities if lengths allow
+                // Fallback: partial mapping
                 else
                 {
                     for (int i = 0; i < selectedIds.Length && i < Quantities.Length; i++)
+                    {
                         qtyMap[selectedIds[i]] = Math.Max(1, Quantities[i]);
+                    }
                 }
             }
 
@@ -466,24 +468,22 @@ namespace ResturantProj.Controllers
                 ModelState.AddModelError("", "Please select at least one menu item.");
             }
 
-            // --- Build order items using robust qty mapping ---
-            order.OrderItems = new List<OrderItem>();
+            // --- Build order items ---
+            order.OrderItems ??= new List<OrderItem>();
+            order.OrderItems.Clear();
+
             var selectedSet = new HashSet<int>(selectedIds);
 
             foreach (var mi in menuItems)
             {
-                if (!selectedSet.Contains(mi.Id))
-                    continue;
-
+                if (!selectedSet.Contains(mi.Id)) continue;
                 if (!mi.IsAvailable)
                 {
                     ModelState.AddModelError("", $"{mi.Name} is currently unavailable.");
                     continue;
                 }
 
-                int qty = 1;
-                if (qtyMap.TryGetValue(mi.Id, out var q))
-                    qty = q;
+                int qty = qtyMap.TryGetValue(mi.Id, out var q) ? q : 1;
 
                 order.OrderItems.Add(new OrderItem
                 {
@@ -502,13 +502,14 @@ namespace ResturantProj.Controllers
             // --- Compute totals ---
             order.SubTotal = order.OrderItems.Sum(x => x.Subtotal);
 
-            // Discount logic (your existing)
+            // Discount logic
             var egyptZone = TimeZoneInfo.FindSystemTimeZoneById("Egypt Standard Time");
             var localNow = TimeZoneInfo.ConvertTimeFromUtc(DateTime.UtcNow, egyptZone);
 
             order.DiscountAmount = 0m;
             if (localNow.Hour >= 15 && localNow.Hour < 17)
                 order.DiscountAmount += order.SubTotal * 0.20m; // Happy hour 20%
+
             if (order.SubTotal > 100)
                 order.DiscountAmount += (order.SubTotal - order.DiscountAmount) * 0.10m; // Bulk 10%
 
@@ -521,16 +522,14 @@ namespace ResturantProj.Controllers
             order.Status = OrderStatus.Pending;
             order.StatusChangedAt = DateTime.UtcNow;
 
-            // --- Daily limit check (careful with UTC vs local) ---
-            var today = DateTime.UtcNow.Date;            // use UTC date to match CreatedAt which is UTC
+            // --- Daily limit check ---
+            var today = DateTime.UtcNow.Date;
             var tomorrow = today.AddDays(1);
-
             var menuItemIdsInOrder = order.OrderItems.Select(oi => oi.MenuItemId).Distinct().ToList();
 
             var orderedCountsToday = await db.OrderItems
                 .Where(oi => menuItemIdsInOrder.Contains(oi.MenuItemId)
-                             && oi.Order.CreatedAt >= today
-                             && oi.Order.CreatedAt < tomorrow)
+                             && oi.Order.CreatedAt >= today && oi.Order.CreatedAt < tomorrow)
                 .GroupBy(oi => oi.MenuItemId)
                 .Select(g => new { MenuItemId = g.Key, TotalOrdered = g.Sum(x => x.Quantity) })
                 .ToListAsync();
@@ -541,116 +540,118 @@ namespace ResturantProj.Controllers
             {
                 orderedCountsMap.TryGetValue(oi.MenuItemId, out var alreadyOrderedToday);
                 var totalIfAdded = alreadyOrderedToday + oi.Quantity;
-                if (totalIfAdded > DailyLimit)
+
+                if (totalIfAdded > 50)
                 {
                     var mi = menuItems.FirstOrDefault(m => m.Id == oi.MenuItemId);
-                    var remaining = Math.Max(0, DailyLimit - alreadyOrderedToday);
+                    var remaining = Math.Max(0, 50 - alreadyOrderedToday);
                     ModelState.AddModelError("", $"{mi?.Name ?? "Item"} exceeds the daily limit. Only {remaining} remaining for today.");
                 }
             }
 
-            // --- If invalid, log details and return the view (menu items must be present) ---
+            // --- LOG ModelState if invalid ---
             if (!ModelState.IsValid)
             {
-                // Log ModelState errors to help debugging
-                _logger.LogWarning("Create(Order) ModelState invalid. SelectedIds: {SelectedIds}. QtyMap: {QtyMap}. Errors: {Errors}",
+                _logger.LogWarning("Create(Order) ModelState invalid. OrderType: {OrderType}, DeliveryAddress: {DeliveryAddress}, SelectedIds: {SelectedIds}, QtyMap: {QtyMap}, Errors: {Errors}",
+                    order.OrderType,
+                    order.DeliveryAddress?.FullAddress ?? "null",
                     string.Join(",", selectedIds),
                     string.Join(", ", qtyMap.Select(kv => $"{kv.Key}:{kv.Value}")),
                     string.Join(" | ", ModelState.Where(kvp => kvp.Value.Errors.Any())
-                                                 .Select(kvp => $"{kvp.Key}: {string.Join(",", kvp.Value.Errors.Select(e => e.ErrorMessage))}")));
+                        .Select(kvp => $"{kvp.Key}: {string.Join(",", kvp.Value.Errors.Select(e => e.ErrorMessage))}")));
 
-                // Ensure the view has the menu items and daily limit
                 ViewBag.MenuItems = menuItems;
-                ViewBag.DailyLimit = DailyLimit;
+                ViewBag.DailyLimit = 50;
                 return View(order);
             }
 
-            // --- Save in transaction and update MenuItem counts ---
-            using (var transaction = await db.Database.BeginTransactionAsync())
+            // --- Save in transaction ---
+            using var transaction = await db.Database.BeginTransactionAsync();
+            try
             {
-                try
+                // Ensure EF links DeliveryAddress to Order so FK is set on save
+                if (order.DeliveryAddress != null)
                 {
-                    db.Orders.Add(order);
-                    await db.SaveChangesAsync();
+                    order.DeliveryAddress.Order = order;
+                }
 
-                    var idsToUpdate = order.OrderItems.Select(oi => oi.MenuItemId).Distinct().ToList();
-                    var itemsToUpdate = await db.MenuItems
-                        .Where(m => idsToUpdate.Contains(m.Id))
-                        .ToListAsync();
+                db.Orders.Add(order);
+                await db.SaveChangesAsync();
 
-                    foreach (var oi in order.OrderItems)
+                var idsToUpdate = order.OrderItems.Select(oi => oi.MenuItemId).Distinct().ToList();
+                var itemsToUpdate = await db.MenuItems
+                    .Where(m => idsToUpdate.Contains(m.Id))
+                    .ToListAsync();
+
+                foreach (var oi in order.OrderItems)
+                {
+                    var menuItem = itemsToUpdate.First(m => m.Id == oi.MenuItemId);
+                    menuItem.DailyOrderCount += oi.Quantity;
+
+                    if (menuItem.DailyOrderCount >= 50)
                     {
-                        var menuItem = itemsToUpdate.First(m => m.Id == oi.MenuItemId);
-                        menuItem.DailyOrderCount += oi.Quantity;
-
-                        if (menuItem.DailyOrderCount >= DailyLimit)
-                        {
-                            menuItem.IsAvailable = false;
-                        }
-
-                        db.MenuItems.Update(menuItem);
+                        menuItem.IsAvailable = false;
                     }
 
-                    await db.SaveChangesAsync();
-                    await transaction.CommitAsync();
+                    db.MenuItems.Update(menuItem);
                 }
-                catch (Exception ex)
-                {
-                    await transaction.RollbackAsync();
-                    _logger.LogError(ex, "Failed saving order in Create(Order). OrderNumber: {OrderNumber}", order.OrderNumber);
-                    // rethrow or return error view — rethrow to keep behavior consistent with your previous code
-                    throw;
-                }
+
+                await db.SaveChangesAsync();
+                await transaction.CommitAsync();
+            }
+            catch (Exception ex)
+            {
+                await transaction.RollbackAsync();
+                _logger.LogError(ex, "Failed saving order in Create(Order). OrderNumber: {OrderNumber}", order.OrderNumber);
+                throw;
             }
 
-            // --- Schedule status changes (keeps your scoped approach) ---
+            // --- Background status updater ---
             _ = Task.Run(async () =>
             {
                 try
                 {
                     await Task.Delay(TimeSpan.FromMinutes(5));
-                    using (var scope = _scopeFactory.CreateScope())
+
+                    using var scope = _scopeFactory.CreateScope();
+                    var scopedDb = scope.ServiceProvider.GetRequiredService<MyResContext>();
+                    var freshOrder = await scopedDb.Orders.FindAsync(order.Id);
+
+                    if (freshOrder != null && freshOrder.Status == OrderStatus.Pending)
                     {
-                        var scopedDb = scope.ServiceProvider.GetRequiredService<MyResContext>();
-                        var freshOrder = await scopedDb.Orders.FindAsync(order.Id);
-                        if (freshOrder != null && freshOrder.Status == OrderStatus.Pending)
-                        {
-                            freshOrder.Status = OrderStatus.Preparing;
-                            freshOrder.StatusChangedAt = DateTime.UtcNow;
-                            await scopedDb.SaveChangesAsync();
-                        }
+                        freshOrder.Status = OrderStatus.Preparing;
+                        freshOrder.StatusChangedAt = DateTime.UtcNow;
+                        await scopedDb.SaveChangesAsync();
+                    }
 
-                        // compute max prep from the menu items we know
-                        var maxPrepTime = 10;
-                        try
-                        {
-                            // try read prep time from DB (safer than relying on detached order.OrderItems)
-                            var ids = order.OrderItems.Select(x => x.MenuItemId).Distinct().ToList();
-                            var items = await scopedDb.MenuItems.Where(m => ids.Contains(m.Id)).ToListAsync();
-                            maxPrepTime = items.Max(m => m.PreparationTimeMinutes);
-                        }
-                        catch { /* fallback to 10 minutes */ }
+                    var maxPrepTime = 10;
+                    try
+                    {
+                        var ids = order.OrderItems.Select(x => x.MenuItemId).Distinct().ToList();
+                        var items = await scopedDb.MenuItems.Where(m => ids.Contains(m.Id)).ToListAsync();
+                        maxPrepTime = items.Any() ? items.Max(m => m.PreparationTimeMinutes) : 10;
+                    }
+                    catch { /* fallback */ }
 
-                        await Task.Delay(TimeSpan.FromMinutes(maxPrepTime));
+                    await Task.Delay(TimeSpan.FromMinutes(maxPrepTime));
 
+                    freshOrder = await scopedDb.Orders.FindAsync(order.Id);
+                    if (freshOrder != null && freshOrder.Status == OrderStatus.Preparing)
+                    {
+                        freshOrder.Status = OrderStatus.Ready;
+                        freshOrder.StatusChangedAt = DateTime.UtcNow;
+                        await scopedDb.SaveChangesAsync();
+                    }
+
+                    if (order.OrderType == OrderType.Delivery)
+                    {
+                        await Task.Delay(TimeSpan.FromMinutes(30));
                         freshOrder = await scopedDb.Orders.FindAsync(order.Id);
-                        if (freshOrder != null && freshOrder.Status == OrderStatus.Preparing)
+                        if (freshOrder != null && freshOrder.Status == OrderStatus.Ready)
                         {
-                            freshOrder.Status = OrderStatus.Ready;
+                            freshOrder.Status = OrderStatus.Delivered;
                             freshOrder.StatusChangedAt = DateTime.UtcNow;
                             await scopedDb.SaveChangesAsync();
-                        }
-
-                        if (order.OrderType == OrderType.Delivery)
-                        {
-                            await Task.Delay(TimeSpan.FromMinutes(30));
-                            freshOrder = await scopedDb.Orders.FindAsync(order.Id);
-                            if (freshOrder != null && freshOrder.Status == OrderStatus.Ready)
-                            {
-                                freshOrder.Status = OrderStatus.Delivered;
-                                freshOrder.StatusChangedAt = DateTime.UtcNow;
-                                await scopedDb.SaveChangesAsync();
-                            }
                         }
                     }
                 }
@@ -663,6 +664,8 @@ namespace ResturantProj.Controllers
             TempData["SuccessMessage"] = "Order placed successfully!";
             return RedirectToAction("Index", "Home");
         }
+
+
 
 
 

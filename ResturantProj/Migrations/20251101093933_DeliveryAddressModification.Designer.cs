@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using ResturantProj.ResContext;
 
@@ -11,9 +12,11 @@ using ResturantProj.ResContext;
 namespace ResturantProj.Migrations
 {
     [DbContext(typeof(MyResContext))]
-    partial class MyResContextModelSnapshot : ModelSnapshot
+    [Migration("20251101093933_DeliveryAddressModification")]
+    partial class DeliveryAddressModification
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -327,7 +330,7 @@ namespace ResturantProj.Migrations
                         .HasMaxLength(500)
                         .HasColumnType("nvarchar(500)");
 
-                    b.Property<int?>("OrderId")
+                    b.Property<int>("OrderId")
                         .HasColumnType("int");
 
                     b.Property<string>("Phone")
@@ -345,8 +348,7 @@ namespace ResturantProj.Migrations
                     b.HasKey("Id");
 
                     b.HasIndex("OrderId")
-                        .IsUnique()
-                        .HasFilter("[OrderId] IS NOT NULL");
+                        .IsUnique();
 
                     b.ToTable("DeliveryAddresses", (string)null);
                 });
@@ -625,7 +627,8 @@ namespace ResturantProj.Migrations
                     b.HasOne("ResturantProj.Models.Order", "Order")
                         .WithOne("DeliveryAddress")
                         .HasForeignKey("ResturantProj.Models.DeliveryAddress", "OrderId")
-                        .OnDelete(DeleteBehavior.Cascade);
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
 
                     b.Navigation("Order");
                 });
