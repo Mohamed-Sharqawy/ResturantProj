@@ -43,6 +43,25 @@ Customer integrity is not questioned as customers will be physically present to 
 | Phone Number | ✓ | Contact phone number |
 | Full Address | ✓ | Complete delivery address |
 
+## 4.Inventory Management
+
+### Menu Item Quantity Updates
+
+**Automatic Update:**  
+Menu item quantities are automatically updated at midnight daily to ensure inventory accuracy.
+
+**Manual Update:**  
+Administrators can manually control item availability through the admin dashboard:
+
+1. Navigate to the **Admin Dashboard**
+2. Go to **Category Management** option
+3. Click on the **Dishes** button
+4. Control the availability of any menu item manually
+
+This dual approach ensures both automated inventory management and flexible manual control when needed.
+
+---
+
 **Database Entity:** `DeliveryAddress`  
 Stores all delivery-related customer information.
 
